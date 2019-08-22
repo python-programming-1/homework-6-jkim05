@@ -1,211 +1,177 @@
-{
- "cells": [
-  {
-   "cell_type": "code",
-   "execution_count": 12,
-   "metadata": {},
-   "outputs": [
-    {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "Popularity Metrics: {'most_popular_channel': '\"ChildishGambinoVEVO\"', 'least_popular_channel': ' Lorenzo’s', 'most_pop_num_views': 3758488765, 'least_pop_num_views': 0}\n",
-      "Like Dislike Metrics: {'most_liked_channel': '\"ChildishGambinoVEVO\"', 'num_likes': 96700818, 'most_disliked_channel': '\"Logan Paul Vlogs\"', 'num_dislikes': 9192539}\n"
-     ]
-    }
-   ],
-   "source": [
-    "import csv\n",
-    "import pprint\n",
-    "\n",
-    "\n",
-    "def get_video_data():\n",
-    "    \"\"\"this function reads from a .csv file and converts the data into a list of dictionaries.\n",
-    "     each item in the list is a dictionary of a specific videos and their attributes.\"\"\"\n",
-    "\n",
-    "    vid_data = []\n",
-    "    with open('USvideos.csv', newline='') as csvfile:\n",
-    "        spamreader = csv.reader(csvfile, delimiter=',', quotechar='|')\n",
-    "        for row in spamreader:\n",
-    "            if len(row) == 16:\n",
-    "                vid_dict = {'video_id': row[0],\n",
-    "                            'trending_date': row[1],\n",
-    "                            'title': row[2],\n",
-    "                            'channel_title': row[3],\n",
-    "                            'category_id': row[4],\n",
-    "                            'publish_times': row[5],\n",
-    "                            'tags': row[6],\n",
-    "                            'views': row[7],\n",
-    "                            'likes': row[8],\n",
-    "                            'dislikes': row[9],\n",
-    "                            'comment_count': row[10],\n",
-    "                            'thumbnail_link': row[11],\n",
-    "                            'comments_disabled': row[12],\n",
-    "                            'ratings_disabled': row[13],\n",
-    "                            'video_error': row[14],\n",
-    "                            'description': row[15]\n",
-    "                            }\n",
-    "                vid_data.append(vid_dict)\n",
-    "    return vid_data\n",
-    "\n",
-    "\n",
-    "def print_data(data):\n",
-    "    for entry in data:\n",
-    "        pprint.pprint(entry)\n",
-    "\n",
-    "#################################### Homework Part Starts Here ########################################\n",
-    "\n",
-    "# Note to Stefan\n",
-    "\n",
-    "'''\n",
-    "\n",
-    "Note 1: offset .csv file\n",
-    "\n",
-    "the .csv file i'm reading, for some reason, is getting messed up slightly.\n",
-    "when i open the .csv file with a .csv reader in Jupyter, \n",
-    "some rows are getting offset. for example, in the third row of data, \n",
-    "the title \"Racist Superman | Rudy Mancuso, King Bach, & Lele Pons\"\n",
-    "gets split up at \"Racist Superman | Rudy Mancuso\".\n",
-    "the second half of the title \"King Bach, & Lele Pons\" then gets shifted one cell over to the right,\n",
-    "and becomes the channel_title.\n",
-    "\n",
-    "the actual channel_title \"Rudy Mancuso\" then becomes the category_id, \n",
-    "then the actual category_id shifts right one cell to become the publish_time...\n",
-    "\n",
-    "due to this, i get an ValueError error in the for loop, \n",
-    "because the loop can't += the views since some rows are returning a string, \n",
-    "and not an integer value.\n",
-    "\n",
-    "so i added in a try/except to just pass over those instances.\n",
-    "\n",
-    "but while the my_max functions are working properly, \n",
-    "the my_min function is getting stuck because the rows with the offset data essentially have 0 views, \n",
-    "and is preventing me from seeing the actual correct least_popular_channel.\n",
-    "\n",
-    "i think the code should be correct, and should be getting the proper answers \n",
-    "if it read an unbroken .csv file.\n",
-    "\n",
-    "just wanted to note that, please test my hw with a good .csv file.\n",
-    "\n",
-    "'''\n",
-    "\n",
-    "\n",
-    "def my_max(dictionary):\n",
-    "    return_dict = {'views': 0, 'channel': None}\n",
-    "\n",
-    "    for k,v in dictionary.items():\n",
-    "        if int(v) > return_dict['views']:\n",
-    "            return_dict['channel'] = k\n",
-    "            return_dict['views'] = int(v)\n",
-    "    return return_dict\n",
-    "\n",
-    "def my_min(dictionary):\n",
-    "    return_dict = {'views': float('Inf'), 'channel': None}\n",
-    "    for k,v in dictionary.items():\n",
-    "        if k == 'Unspecified':\n",
-    "            continue\n",
-    "        if int(v) < return_dict['views']:\n",
-    "            return_dict['channel'] = k\n",
-    "            return_dict['views'] = int(v)\n",
-    "    return return_dict\n",
-    "    \n",
-    "def get_most_popular_and_least_popular_channel(data):\n",
-    "    \"\"\" fill in the Nones for the dictionary below using the vid data \"\"\"\n",
-    "    most_popular_and_least_popular_channel = {'most_popular_channel': None, 'least_popular_channel': None, 'most_pop_num_views': None,\n",
-    "                                              'least_pop_num_views': None}\n",
-    "    channel_views_dictionary = {}\n",
-    "    \n",
-    "    for item in data[1:]:\n",
-    "        try:\n",
-    "            channel_views_dictionary.setdefault(item['channel_title'], 0)\n",
-    "            channel_views_dictionary[item['channel_title']] += int(item['views'])\n",
-    "        except:\n",
-    "            pass\n",
-    "\n",
-    "    most_views_channel = my_max(channel_views_dictionary)\n",
-    "    least_views_channel = my_min(channel_views_dictionary)\n",
-    "\n",
-    "    most_popular_and_least_popular_channel['most_popular_channel'] = most_views_channel['channel']\n",
-    "    most_popular_and_least_popular_channel['most_pop_num_views'] = most_views_channel['views']\n",
-    "    most_popular_and_least_popular_channel['least_popular_channel'] = least_views_channel['channel']\n",
-    "    most_popular_and_least_popular_channel['least_pop_num_views'] = least_views_channel['views']\n",
-    "    \n",
-    "    return most_popular_and_least_popular_channel\n",
-    "    \n",
-    "def get_most_liked_and_disliked_channel(data):\n",
-    "    \"\"\" fill in the Nones for the dictionary below using the bar party data \"\"\"\n",
-    "    most_liked_and_disliked_channel = {'most_liked_channel': None, 'num_likes': None, 'most_disliked_channel': None, 'num_dislikes': None}\n",
-    "\n",
-    "    channel_likes_dictionary = {}\n",
-    "    channel_dislikes_dictionary = {}\n",
-    "    \n",
-    "    for item in data[1:]:\n",
-    "        try:\n",
-    "            channel_likes_dictionary.setdefault(item['channel_title'], 0)\n",
-    "            channel_likes_dictionary[item['channel_title']] += int(item['likes'])\n",
-    "        except:\n",
-    "            pass\n",
-    "        \n",
-    "    for item in data[1:]:\n",
-    "        try:\n",
-    "            channel_dislikes_dictionary.setdefault(item['channel_title'], 0)\n",
-    "            channel_dislikes_dictionary[item['channel_title']] += int(item['dislikes'])\n",
-    "        except:\n",
-    "            pass\n",
-    "\n",
-    "    most_upvoted_channel = my_max(channel_likes_dictionary)\n",
-    "    most_downvoted_channel = my_max(channel_dislikes_dictionary)\n",
-    "    \n",
-    "    most_liked_and_disliked_channel['most_liked_channel'] = most_upvoted_channel['channel']\n",
-    "    most_liked_and_disliked_channel['num_likes'] = most_upvoted_channel['views']\n",
-    "    most_liked_and_disliked_channel['most_disliked_channel'] = most_downvoted_channel['channel']\n",
-    "    most_liked_and_disliked_channel['num_dislikes'] = most_downvoted_channel['views']\n",
-    "                                                                                \n",
-    "    return most_liked_and_disliked_channel\n",
-    "\n",
-    "##################################### Homework Part Ends Here #########################################\n",
-    "\n",
-    "if __name__ == '__main__':\n",
-    "    vid_data = get_video_data()\n",
-    "\n",
-    "    # uncomment the line below to see what the data looks like\n",
-    "    # print_data(vid_data)\n",
-    "\n",
-    "    popularity_metrics = get_most_popular_and_least_popular_channel(vid_data)\n",
-    "\n",
-    "    like_dislike_metrics = get_most_liked_and_disliked_channel(vid_data)\n",
-    "\n",
-    "    print('Popularity Metrics: {}'.format(popularity_metrics))\n",
-    "    print('Like Dislike Metrics: {}'.format(like_dislike_metrics))"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "metadata": {},
-   "outputs": [],
-   "source": []
-  }
- ],
- "metadata": {
-  "kernelspec": {
-   "display_name": "Python 3",
-   "language": "python",
-   "name": "python3"
-  },
-  "language_info": {
-   "codemirror_mode": {
-    "name": "ipython",
-    "version": 3
-   },
-   "file_extension": ".py",
-   "mimetype": "text/x-python",
-   "name": "python",
-   "nbconvert_exporter": "python",
-   "pygments_lexer": "ipython3",
-   "version": "3.7.3"
-  }
- },
- "nbformat": 4,
- "nbformat_minor": 2
-}
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[7]:
+
+
+import nbconvert
+
+import csv
+import pprint
+
+
+def get_video_data():
+    """this function reads from a .csv file and converts the data into a list of dictionaries.
+     each item in the list is a dictionary of a specific videos and their attributes."""
+
+    vid_data = []
+    with open('USvideos.csv', newline='') as csvfile:
+        spamreader = csv.reader(csvfile, delimiter=',', quotechar='|')
+        for row in spamreader:
+            if len(row) == 16:
+                vid_dict = {'video_id': row[0],
+                            'trending_date': row[1],
+                            'title': row[2],
+                            'channel_title': row[3],
+                            'category_id': row[4],
+                            'publish_times': row[5],
+                            'tags': row[6],
+                            'views': row[7],
+                            'likes': row[8],
+                            'dislikes': row[9],
+                            'comment_count': row[10],
+                            'thumbnail_link': row[11],
+                            'comments_disabled': row[12],
+                            'ratings_disabled': row[13],
+                            'video_error': row[14],
+                            'description': row[15]
+                            }
+                vid_data.append(vid_dict)
+    return vid_data
+
+
+def print_data(data):
+    for entry in data:
+        pprint.pprint(entry)
+
+#################################### Homework Part Starts Here ########################################
+
+# Note to Stefan
+
+'''
+
+Note 1: offset .csv file
+
+the .csv file i'm reading, for some reason, is getting messed up slightly.
+when i open the .csv file with a .csv reader in Jupyter, 
+some rows are getting offset. for example, in the third row of data, 
+the title "Racist Superman | Rudy Mancuso, King Bach, & Lele Pons"
+gets split up at "Racist Superman | Rudy Mancuso".
+the second half of the title "King Bach, & Lele Pons" then gets shifted one cell over to the right,
+and becomes the channel_title.
+
+the actual channel_title "Rudy Mancuso" then becomes the category_id, 
+then the actual category_id shifts right one cell to become the publish_time...
+
+due to this, i get an ValueError error in the for loop, 
+because the loop can't += the views since some rows are returning a string, 
+and not an integer value.
+
+so i added in a try/except to just pass over those instances.
+
+but while the my_max functions are working properly, 
+the my_min function is getting stuck because the rows with the offset data essentially have 0 views, 
+and is preventing me from seeing the actual correct least_popular_channel.
+
+i think the code should be correct, and should be getting the proper answers 
+if it read an unbroken .csv file.
+
+just wanted to note that, please test my hw with a good .csv file.
+
+'''
+
+
+def my_max(dictionary):
+    return_dict = {'views': 0, 'channel': None}
+
+    for k,v in dictionary.items():
+        if int(v) > return_dict['views']:
+            return_dict['channel'] = k
+            return_dict['views'] = int(v)
+    return return_dict
+
+def my_min(dictionary):
+    return_dict = {'views': float('Inf'), 'channel': None}
+    for k,v in dictionary.items():
+        if k == 'Unspecified':
+            continue
+        if int(v) < return_dict['views']:
+            return_dict['channel'] = k
+            return_dict['views'] = int(v)
+    return return_dict
+    
+def get_most_popular_and_least_popular_channel(data):
+    """ fill in the Nones for the dictionary below using the vid data """
+    most_popular_and_least_popular_channel = {'most_popular_channel': None, 'least_popular_channel': None, 'most_pop_num_views': None,
+                                              'least_pop_num_views': None}
+    channel_views_dictionary = {}
+    
+    for item in data[1:]:
+        try:
+            channel_views_dictionary.setdefault(item['channel_title'], 0)
+            channel_views_dictionary[item['channel_title']] += int(item['views'])
+        except:
+            pass
+
+    most_views_channel = my_max(channel_views_dictionary)
+    least_views_channel = my_min(channel_views_dictionary)
+
+    most_popular_and_least_popular_channel['most_popular_channel'] = most_views_channel['channel']
+    most_popular_and_least_popular_channel['most_pop_num_views'] = most_views_channel['views']
+    most_popular_and_least_popular_channel['least_popular_channel'] = least_views_channel['channel']
+    most_popular_and_least_popular_channel['least_pop_num_views'] = least_views_channel['views']
+    
+    return most_popular_and_least_popular_channel
+    
+def get_most_liked_and_disliked_channel(data):
+    """ fill in the Nones for the dictionary below using the bar party data """
+    most_liked_and_disliked_channel = {'most_liked_channel': None, 'num_likes': None, 'most_disliked_channel': None, 'num_dislikes': None}
+
+    channel_likes_dictionary = {}
+    channel_dislikes_dictionary = {}
+    
+    for item in data[1:]:
+        try:
+            channel_likes_dictionary.setdefault(item['channel_title'], 0)
+            channel_likes_dictionary[item['channel_title']] += int(item['likes'])
+        except:
+            pass
+        
+    for item in data[1:]:
+        try:
+            channel_dislikes_dictionary.setdefault(item['channel_title'], 0)
+            channel_dislikes_dictionary[item['channel_title']] += int(item['dislikes'])
+        except:
+            pass
+
+    most_upvoted_channel = my_max(channel_likes_dictionary)
+    most_downvoted_channel = my_max(channel_dislikes_dictionary)
+    
+    most_liked_and_disliked_channel['most_liked_channel'] = most_upvoted_channel['channel']
+    most_liked_and_disliked_channel['num_likes'] = most_upvoted_channel['views']
+    most_liked_and_disliked_channel['most_disliked_channel'] = most_downvoted_channel['channel']
+    most_liked_and_disliked_channel['num_dislikes'] = most_downvoted_channel['views']
+                                                                                
+    return most_liked_and_disliked_channel
+
+##################################### Homework Part Ends Here #########################################
+
+if __name__ == '__main__':
+    vid_data = get_video_data()
+
+    # uncomment the line below to see what the data looks like
+    # print_data(vid_data)
+
+    popularity_metrics = get_most_popular_and_least_popular_channel(vid_data)
+
+    like_dislike_metrics = get_most_liked_and_disliked_channel(vid_data)
+
+    print('Popularity Metrics: {}'.format(popularity_metrics))
+    print('Like Dislike Metrics: {}'.format(like_dislike_metrics))
+
+
+# In[ ]:
+
+
+
+
